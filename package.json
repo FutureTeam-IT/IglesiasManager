@@ -1,10 +1,11 @@
 {
   "name": "iglesias-manager",
+  "description": "Discord BOT for IglesiasCraft server",
   "version": "1.0.0",
-  "main": "src/index.ts",
   "author": "Guglietti Daniele",
   "license": "AGPL-3.0",
   "private": false,
+  "main": "src/index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
     "build": "tsc",
