@@ -13,12 +13,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import Client from "../client/Client";
 
 type Async<T> = Promise<T> | T;
+
 type GuildInteraction = CommandInteraction<"cached">;
 
+type CommandData = ReturnType<SlashCommandBuilder["toJSON"]>
+
 export interface ICommand {
+    get data(): CommandData;
     execute(client: Client, interaction: GuildInteraction): Async<void>;
 }
