@@ -12,3 +12,18 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import Client from "./client/Client";
+
+const bot = new Client({
+    intents: [
+        "GUILDS", 
+        "GUILD_MEMBERS", 
+        "GUILD_MEMBERS",
+        "GUILD_MESSAGE_REACTIONS"
+    ],
+    partials: ["MESSAGE", "GUILD_MEMBER", "REACTION"],
+    token: ""
+});
+
+bot.start();
