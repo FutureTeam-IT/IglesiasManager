@@ -17,7 +17,7 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import Client from "../client/Client";
 
-type Async<T> = Promise<T> | T;
+type Awaitable<T> = Promise<T> | T;
 
 type GuildInteraction = CommandInteraction<"cached">;
 
@@ -25,5 +25,5 @@ type CommandData = ReturnType<SlashCommandBuilder["toJSON"]>
 
 export interface ICommand {
     get data(): CommandData;
-    execute(client: Client, interaction: GuildInteraction): Async<void>;
+    execute(client: Client, interaction: GuildInteraction): Awaitable<void>;
 }
