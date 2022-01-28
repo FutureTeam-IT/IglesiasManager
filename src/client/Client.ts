@@ -24,10 +24,12 @@ type ClientOptions = Discord.ClientOptions & {
     token: string;
 };
 
+type Awaitable<T> = Promise<T> | T;
+
 export default class Client extends Discord.Client {
     #commands: Collection<string, ICommand>;
-
     #rest: REST;
+    #token: string;
 
     constructor(options: ClientOptions) {
         super(options);
@@ -36,6 +38,8 @@ export default class Client extends Discord.Client {
     
         this.#rest = new REST({ version: "9" })
             .setToken(options.token);
+
+        this.#token = options.token;
     }
 
     /**
@@ -60,5 +64,17 @@ export default class Client extends Discord.Client {
         this.#rest.post(Routes.applicationCommands(this.user.id), {
             body: command.data
         });
+    }
+
+    /**
+     * Starts the bot.
+     * @param {Function} callback - The callback to call as soon as the bot is logged.
+     */
+    async start(callback?: () => Awaitable<void>) {
+        await this.login(this.#token);
+    
+        if (callback) {
+            callback();
+        }
     }
 }
