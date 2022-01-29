@@ -18,7 +18,9 @@ import { MessageEmbed } from "discord.js";
 import Client from "../client/Client";
 import { ICommand, CommandData, GuildInteraction } from "../models/Command";
 
-export default class TellCommand implements ICommand {
+export default class Tell implements ICommand {
+    constructor(readonly client: Client<true>) {}
+
     #data = new SlashCommandBuilder()
         .setName("tell")
         .setDescription("Invia un messaggio come il bot.")
@@ -39,7 +41,7 @@ export default class TellCommand implements ICommand {
             .toJSON();
     }
 
-    async execute(client: Client, interaction: GuildInteraction) {
+    async execute(interaction: GuildInteraction) {
         const message = interaction.options.getString("message", true);
         const channel = interaction.options.getChannel("channel", false) ?? interaction.channel;
 
