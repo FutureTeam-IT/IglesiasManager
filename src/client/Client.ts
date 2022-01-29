@@ -17,6 +17,7 @@ import Discord, { Collection } from "discord.js";
 import { Routes } from "discord-api-types/v9";
 import { ICommand } from "../models/Command";
 import { REST } from "@discordjs/rest";
+import { EventType, IListener } from "../models/Listener";
 
 type ReadonlyCollection<K, V> = Readonly<Collection<K, V>>;
 
@@ -24,9 +25,7 @@ type ClientOptions = Discord.ClientOptions & {
     token: string;
 };
 
-type Awaitable<T> = Promise<T> | T;
-
-export default class Client extends Discord.Client {
+export default class Client<Ready extends boolean = false> extends Discord.Client<Ready> {
     #commands: Collection<string, ICommand>;
     #rest: REST;
     #token: string;
@@ -42,20 +41,12 @@ export default class Client extends Discord.Client {
         this.#token = options.token;
     }
 
-    /**
-     * The commands commands collection.
-     */
     get commands(): ReadonlyCollection<string, ICommand> {
         return this.#commands;
     }
 
-    /**
-     * Register a new command.
-     * @param {string} name - The command name.
-     * @param {ICommand} command - The command object.
-     */
-    async register(name: string, command: ICommand) {
-        this.#commands.set(name, command);
+    async register(command: ICommand) {
+        this.#commands.set(command.data.name, command);
 
         if (!this.isReady()) {
             throw new Error("Client is not ready!");
@@ -66,15 +57,11 @@ export default class Client extends Discord.Client {
         });
     }
 
-    /**
-     * Starts the bot.
-     * @param {Function} callback - The callback to call as soon as the bot is logged.
-     */
-    async start(callback?: () => Awaitable<void>) {
+    listen<T extends EventType>(listener: IListener<T>): void {
+        this.on(listener.name, listener.handle.bind(listener, this));
+    }
+
+    async start() {
         await this.login(this.#token);
-    
-        if (callback) {
-            callback();
-        }
     }
 }
