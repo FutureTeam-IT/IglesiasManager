@@ -61,7 +61,7 @@ export default class Client extends Discord.Client {
             throw new Error("Client is not ready!");
         }
 
-        this.#rest.post(Routes.applicationCommands(this.user.id), {
+        await this.#rest.post(Routes.applicationCommands(this.user.id), {
             body: command.data
         });
     }
