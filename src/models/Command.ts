@@ -17,13 +17,11 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import Client from "../client/Client";
 
-type Awaitable<T> = Promise<T> | T;
+export type GuildInteraction = CommandInteraction<"cached">;
 
-type GuildInteraction = CommandInteraction<"cached">;
-
-type CommandData = ReturnType<SlashCommandBuilder["toJSON"]>
+export type CommandData = ReturnType<SlashCommandBuilder["toJSON"]>
 
 export interface ICommand {
     get data(): CommandData;
-    execute(client: Client, interaction: GuildInteraction): Awaitable<void>;
+    execute(client: Client, interaction: GuildInteraction): Promise<void>;
 }
