@@ -13,7 +13,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import env from "dotenv";
+env.config();
+
 import Client from "./client/Client";
+import InteractionEvent from "./events/Interaction";
+import ReadyEvent from "./events/Ready";
 
 const bot = new Client({
     intents: [
@@ -23,7 +28,11 @@ const bot = new Client({
         "GUILD_MESSAGE_REACTIONS"
     ],
     partials: ["MESSAGE", "GUILD_MEMBER", "REACTION"],
-    token: ""
+    token: process.env.TOKEN ?? ""
 });
+
+// * Event Registering
+bot.listen(new ReadyEvent());
+bot.listen(new InteractionEvent());
 
 bot.start();
