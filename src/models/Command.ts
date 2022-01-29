@@ -22,6 +22,7 @@ export type GuildInteraction = CommandInteraction<"cached">;
 export type CommandData = ReturnType<SlashCommandBuilder["toJSON"]>
 
 export interface ICommand {
+    readonly client: Client<true>;
     get data(): CommandData;
-    execute(client: Client, interaction: GuildInteraction): Promise<void>;
+    execute(interaction: GuildInteraction): Promise<void>;
 }
