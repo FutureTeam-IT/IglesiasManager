@@ -57,7 +57,8 @@ export default class Tell implements ICommand {
         channel.send(message);
 
         await interaction.reply({
-            embeds: [embed]
+            embeds: [embed],
+            ephemeral: true
         });
     }
 
