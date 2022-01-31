@@ -1,0 +1,37 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Ticket {
+  id          Int @id @default(autoincrement())
+  author      String
+  created_at  DateTime @default(now())
+  closed_at   DateTime
+  caregory    TicketCategory
+}
+
+model TicketMessage {
+  id          Int @id @default(autoincrement())
+  ticket_id   Int
+  author      String
+  created_at  DateTime @default(now())
+  message     String @db.VarChar(4000)
+}
+
+enum TicketCategory {
+  SUPPORTO
+  PROVINO
+}
+
+model StaffType {
+  id          Int @id @default(autoincrement())
+  name        String @unique
+}
