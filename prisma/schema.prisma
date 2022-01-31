@@ -16,11 +16,13 @@ model Ticket {
   created_at  DateTime @default(now())
   closed_at   DateTime
   caregory    TicketCategory
+  messages    TicketMessage[]
 }
 
 model TicketMessage {
   id          Int @id @default(autoincrement())
   ticket_id   Int
+  ticket      Ticket @relation(fields: [ticket_id], references: [id])
   author      String
   created_at  DateTime @default(now())
   message     String @db.VarChar(4000)

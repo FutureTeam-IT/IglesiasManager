@@ -2,3 +2,5 @@
 /.husky/_
 
 *.env
+
+prisma/migrations
