@@ -18,6 +18,7 @@ import { Routes } from "discord-api-types/v9";
 import { ICommand } from "../models/Command";
 import { REST } from "@discordjs/rest";
 import { EventType, IListener } from "../models/Listener";
+import { PrismaClient } from "@prisma/client";
 
 type ReadonlyCollection<K, V> = Readonly<Collection<K, V>>;
 
@@ -29,6 +30,7 @@ export default class Client<Ready extends boolean = false> extends Discord.Clien
     #commands: Collection<string, ICommand>;
     #rest: REST;
     #token: string;
+    #prisma: PrismaClient;
 
     constructor(options: ClientOptions) {
         super(options);
@@ -39,10 +41,15 @@ export default class Client<Ready extends boolean = false> extends Discord.Clien
             .setToken(options.token);
 
         this.#token = options.token;
+        this.#prisma = new PrismaClient();
     }
 
     get commands(): ReadonlyCollection<string, ICommand> {
         return this.#commands;
+    }
+
+    get db(): Omit<PrismaClient, `$${string}`> {
+        return this.#prisma;
     }
 
     async register(command: ICommand) {
