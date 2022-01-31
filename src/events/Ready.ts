@@ -14,6 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import Client from "../client/Client";
+import Announce from "../commands/Announce";
 
 import Tell from "../commands/Tell";
 
@@ -33,6 +34,7 @@ export default class ReadyEvent implements IListener<"ready"> {
         });
 
         client.register(new Tell(client));
+        client.register(new Announce(client));
 
         console.log("| All ready!");
     }
