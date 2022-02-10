@@ -13,12 +13,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import Discord, { Collection } from "discord.js";
+import Discord, { Collection, User } from "discord.js";
 import { Routes } from "discord-api-types/v9";
 import { ICommand } from "../models/Command";
 import { REST } from "@discordjs/rest";
 import { EventType, IListener } from "../models/Listener";
 import { PrismaClient } from "@prisma/client";
+import TicketManager from "./TicketManager";
 
 type ReadonlyCollection<K, V> = Readonly<Collection<K, V>>;
 
@@ -26,11 +27,16 @@ type ClientOptions = Discord.ClientOptions & {
     token: string;
 };
 
+type ManagersType = {
+    ticket: TicketManager
+};
+
 export default class Client<Ready extends boolean = false> extends Discord.Client<Ready> {
     #commands: Collection<string, ICommand>;
     #rest: REST;
     #token: string;
     #prisma: PrismaClient;
+    #ticketManger: TicketManager;
 
     constructor(options: ClientOptions) {
         super(options);
@@ -42,6 +48,8 @@ export default class Client<Ready extends boolean = false> extends Discord.Clien
 
         this.#token = options.token;
         this.#prisma = new PrismaClient();
+
+        this.#ticketManger = new TicketManager(this);
     }
 
     get commands(): ReadonlyCollection<string, ICommand> {
@@ -50,6 +58,10 @@ export default class Client<Ready extends boolean = false> extends Discord.Clien
 
     get db(): Omit<PrismaClient, `$${string}`> {
         return this.#prisma;
+    }
+
+    get managers(): ManagersType {
+        return { ticket: this.#ticketManger };
     }
 
     async register(command: ICommand) {
@@ -70,5 +82,10 @@ export default class Client<Ready extends boolean = false> extends Discord.Clien
 
     async start() {
         await this.login(this.#token);
+    }
+
+    isMe(user: User): boolean {
+        return this.isReady() && 
+            (user.id === this.user.id);
     }
 }
