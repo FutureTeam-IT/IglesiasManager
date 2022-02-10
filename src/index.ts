@@ -18,6 +18,7 @@ env.config();
 
 import Client from "./client/Client";
 import InteractionEvent from "./events/Interaction";
+import ReactionAddEvent from "./events/ReactionAdd";
 import ReadyEvent from "./events/Ready";
 
 const bot = new Client({
@@ -27,12 +28,13 @@ const bot = new Client({
         "GUILD_MEMBERS",
         "GUILD_MESSAGE_REACTIONS"
     ],
-    partials: ["MESSAGE", "GUILD_MEMBER", "REACTION"],
+    partials: ["MESSAGE", "REACTION"],
     token: process.env.TOKEN ?? ""
 });
 
 // * Event Registering
 bot.listen(new ReadyEvent());
 bot.listen(new InteractionEvent());
+bot.listen(new ReactionAddEvent());
 
 bot.start();
