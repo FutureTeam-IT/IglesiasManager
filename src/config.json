@@ -4,6 +4,7 @@
     },
     "tickets": {
         "category": "",
-        "channel": ""
+        "channel": "",
+        "allowed": []
     }
 }

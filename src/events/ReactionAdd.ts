@@ -29,12 +29,12 @@ export default class ReactionAddEvent implements IListener<"messageReactionAdd">
             reaction = await reaction.fetch();
         }
 
-        if (user.bot || client.isMe(user)) {
+        if (client.isMe(user) || user.bot) {
             return;
         }
 
-        if (client.managers.ticket.isRequest(reaction)) {
-            client.managers.ticket.open(reaction, user);
+        if (client.managers.ticket.isTicketRequest(reaction)) {
+            client.managers.ticket.openTicket(reaction, user);
             return;
         }
     }

@@ -36,4 +36,5 @@ enum TicketCategory {
 model StaffType {
   id          Int @id @default(autoincrement())
   name        String @unique
+  scout       String
 }

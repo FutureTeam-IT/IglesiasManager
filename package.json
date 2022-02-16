@@ -27,10 +27,14 @@
     "@discordjs/builders": "^0.12.0",
     "@discordjs/rest": "^0.3.0",
     "@prisma/client": "^3.8.1",
+    "bufferutil": "^4.0.6",
     "discord-api-types": "^0.26.1",
     "discord.js": "^13.6.0",
     "dotenv": "^14.3.2",
-    "prisma": "^3.8.1"
+    "erlpack": "discord/erlpack",
+    "prisma": "^3.8.1",
+    "utf-8-validate": "^5.0.8",
+    "zlib-sync": "^0.1.7"
   },
   "lint-staged": {
     "src/**/*.ts": [
