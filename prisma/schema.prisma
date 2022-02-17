@@ -36,5 +36,12 @@ enum TicketCategory {
 model StaffType {
   id          Int @id @default(autoincrement())
   name        String @unique
-  scout       String
+  interviewers Interviewer[]
+}
+
+model Interviewer {
+  id            Int @id @default(autoincrement())
+  staff_type_id Int
+  interviewer   String
+  staff_type    StaffType @relation(fields: [staff_type_id], references: [id])
 }
