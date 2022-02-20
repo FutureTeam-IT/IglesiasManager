@@ -15,7 +15,7 @@ model Ticket {
   author      String
   created_at  DateTime @default(now())
   closed_at   DateTime?
-  caregory    TicketCategory
+  category    TicketCategory
   messages    TicketMessage[]
 }
 
