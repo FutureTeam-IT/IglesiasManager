@@ -26,13 +26,13 @@
   "dependencies": {
     "@discordjs/builders": "^0.12.0",
     "@discordjs/rest": "^0.3.0",
-    "@prisma/client": "^3.8.1",
+    "@prisma/client": "^3.9.2",
     "bufferutil": "^4.0.6",
     "discord-api-types": "^0.26.1",
     "discord.js": "^13.6.0",
     "dotenv": "^14.3.2",
     "erlpack": "discord/erlpack",
-    "prisma": "^3.8.1",
+    "prisma": "^3.9.2",
     "utf-8-validate": "^5.0.8",
     "zlib-sync": "^0.1.7"
   },
