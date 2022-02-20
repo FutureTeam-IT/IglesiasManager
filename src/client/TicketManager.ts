@@ -117,26 +117,26 @@ export default class TicketManager {
 
         await message.react("🔒");
 
-        const reactions = message.createReactionCollector({
-            filter: (reaction, user) => user.id !== this.client.user?.id
-        });
+        // const reactions = message.createReactionCollector({
+        //     filter: (reaction, user) => user.id !== this.client.user?.id
+        // });
     
-        reactions.on("collect", async (r) => {
-            if (r.emoji.name === "🔒") {
-                r.remove();
-                await r.message.react("✅");
-                await r.message.react("❌");
-            }
+        // reactions.on("collect", async (r) => {
+        //     if (r.emoji.name === "🔒") {
+        //         r.remove();
+        //         await r.message.react("✅");
+        //         await r.message.react("❌");
+        //     }
 
-            if (r.emoji.name === "✅") {
-                return this.closeTicket(ticket, channel);
-            }
+        //     if (r.emoji.name === "✅") {
+        //         return this.closeTicket(ticket, channel);
+        //     }
 
-            if (r.emoji.name === "❌") {
-                r.message.reactions.removeAll();
-                await r.message.react("🔒");
-            }
-        });
+        //     if (r.emoji.name === "❌") {
+        //         r.message.reactions.removeAll();
+        //         await r.message.react("🔒");
+        //     }
+        // });
 
         // if (ticket.category === "PROVINO") {
         //     const roles = await this.client.db.staffType.findMany({
@@ -195,7 +195,9 @@ export default class TicketManager {
         //     }
         // }
         
-        const messages = channel.createMessageCollector();
+        const messages = channel.createMessageCollector({
+            filter: (m) => !this.client.isMe(m.author)
+        });
 
         messages.on("collect", async message => {
             console.log(message.content);
