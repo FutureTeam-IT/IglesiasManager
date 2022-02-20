@@ -13,8 +13,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Ticket, TicketCategory } from "@prisma/client";
 import { Guild, Message, MessageActionRow, MessageEmbed, MessageReaction, MessageSelectMenu, TextChannel, User } from "discord.js";
+import { Ticket, TicketCategory } from "@prisma/client";
+import { tickets } from "../config.json";
 import Client from "./Client";
 
 type Emoji = "🆘" | "🕵️";
@@ -30,7 +31,6 @@ type TicketMessageReaction = MessageReaction & {
     }
 };
 
-
 export default class TicketManager {
     static readonly emoji: EmojiMap = {
         "🆘": "SUPPORTO",
@@ -39,8 +39,8 @@ export default class TicketManager {
 
     static embed = (ticket: Ticket) => new MessageEmbed()
         .setTitle("Ticket Aperto")
-        .setDescription(`Hai aperto un ticket per \`${ticket.caregory.toLowerCase()}\`.
-        ${ticket.caregory === "SUPPORTO" ?
+        .setDescription(`Hai aperto un ticket per **${ticket.category.toLowerCase()}**.
+        ${ticket.category === "SUPPORTO" ?
         "Attendi una risposta dello staff." :
         "Seleziona il ruolo per il provino."}
         Per chiudere il ticket premi 🔒.
@@ -51,6 +51,10 @@ export default class TicketManager {
 
     isTicketRequest(reaction: MessageReaction): reaction is TicketMessageReaction {
         if (!reaction.message.inGuild() || !reaction.message.channel.isText()) {
+            return false;
+        }
+
+        if (reaction.message.channelId !== tickets.channel) {
             return false;
         }
 
@@ -76,7 +80,7 @@ export default class TicketManager {
         return await this.client.db.ticket.create({
             data: {
                 author: user.id,
-                caregory: TicketManager.emoji[reaction.emoji.name]
+                category: TicketManager.emoji[reaction.emoji.name]
             }
         });
     }
@@ -84,13 +88,21 @@ export default class TicketManager {
     async createChannel(ticket: Ticket, guild: Guild): Promise<TextChannel> {
         return await guild.channels.create(`ticket-${ticket.id}`, {
             type: "GUILD_TEXT",
+            parent: tickets.category,
             permissionOverwrites: [
-                { id: ticket.author, allow: ["VIEW_CHANNEL", "SEND_MESSAGES"] }
+                {
+                    id: ticket.author, 
+                    allow: ticket.category === "SUPPORTO" ?
+                        ["VIEW_CHANNEL", "SEND_MESSAGES"] :
+                        ["VIEW_CHANNEL"]
+                }
             ]
         });
     }
 
     async openTicket(reaction: TicketMessageReaction, user: User) {
+        reaction.users.remove(user);
+
         if (await this.hasOpenTicket(user)) {
             user.send("Hai già aperto un ticket. Attendi che lo staff risponda o chiudi il precedente.");
             return;
@@ -99,58 +111,19 @@ export default class TicketManager {
         const ticket = await this.createTicket(reaction, user);
         const channel = await this.createChannel(ticket, reaction.message.guild);
 
-        let message: Message;
-
-        if (reaction.emoji.name === "🕵️") {
-            const roles = await this.client.db.staffType
-                .findMany();
-
-            const row = new MessageActionRow()
-                .addComponents(new MessageSelectMenu()
-                    .setCustomId("role")
-                    .setPlaceholder("Seleziona un ruolo")
-                    .setMaxValues(1)
-                    .setOptions(...roles.map(role => ({ value: `${role.id}`, label: role.name })))
-                );
-
-
-            message = await channel.send({
-                embeds: [TicketManager.embed(ticket)],
-                components: [row]
-            });
-
-            try {
-                const select = await message.awaitMessageComponent({
-                    componentType: "SELECT_MENU",
-                    filter: select => select.id === "role"
-                });
-
-                const role = roles.find(role => `${role.id}` === select.values[0]);
-                if (!role) throw new Error();
-
-                await channel.permissionOverwrites.create(role.scout, {
-                    VIEW_CHANNEL: true,
-                });
-            } catch (e) {
-                return await this.closeTicket(ticket, channel);
-            }
-        } else {
-            message = await channel.send({
-                embeds: [TicketManager.embed(ticket)]
-            });
-        }
+        const message: Message = await channel.send({
+            embeds: [TicketManager.embed(ticket)]
+        });
 
         await message.react("🔒");
 
         const reactions = message.createReactionCollector({
             filter: (reaction, user) => user.id !== this.client.user?.id
         });
-
-        const messages = channel.createMessageCollector();
-
-        reactions.on("collect", async (r, u) => {
+    
+        reactions.on("collect", async (r) => {
             if (r.emoji.name === "🔒") {
-                await r.remove();
+                r.remove();
                 await r.message.react("✅");
                 await r.message.react("❌");
             }
@@ -160,15 +133,74 @@ export default class TicketManager {
             }
 
             if (r.emoji.name === "❌") {
-                await r.remove();
+                r.message.reactions.removeAll();
                 await r.message.react("🔒");
             }
-
-            r.users.remove(u);
         });
 
-        messages.on("collect", message => {
-            this.client.db.ticketMessage.create({
+        // if (ticket.category === "PROVINO") {
+        //     const roles = await this.client.db.staffType.findMany({
+        //         include: { interviewers: true }
+        //     });
+
+        //     if (!roles.length) {
+        //         user.send("Non ci sono provini aperti al momento.");
+        //         this.closeTicket(ticket, channel);
+        //         return;
+        //     }
+
+        //     const row = new MessageActionRow()
+        //         .addComponents(
+        //             new MessageSelectMenu()
+        //                 .setCustomId("role-select")
+        //                 .setMaxValues(1)
+        //                 .setPlaceholder("Seleziona il ruolo")
+        //                 .addOptions(...roles.map(role => ({
+        //                     label: role.name,
+        //                     value: `${role.id}`
+        //                 })))
+        //         );
+
+        //     await message.edit({
+        //         components: [row]
+        //     });
+
+        //     try {
+        //         const selected = await message.awaitMessageComponent({
+        //             componentType: "SELECT_MENU",
+        //             filter: (s) => s.customId === "role-select" && s.user.id === user.id,
+        //             time: 60e3
+        //         });
+
+        //         const role = roles.find(
+        //             role => role.id === Number.parseInt(selected.values[0])
+        //         );
+
+        //         if (!role) throw new Error();
+
+        //         await selected.reply(`Hai selezionato il provino per **${role.name}**`);
+
+        //         await channel.permissionOverwrites.create(user.id, {
+        //             "SEND_MESSAGES": true
+        //         });
+
+        //         role.interviewers.forEach(async ({ interviewer }) => {
+        //             await channel.permissionOverwrites.create(interviewer, {
+        //                 "SEND_MESSAGES": true,
+        //                 "VIEW_CHANNEL": true
+        //             });
+        //         });
+        //     } catch (e) {
+        //         return this.closeTicket(ticket, channel);
+        //     }
+        // }
+        
+        const messages = channel.createMessageCollector();
+
+        messages.on("collect", async message => {
+            console.log(message.content);
+
+            await this.client.db.ticketMessage.create({
                 data: {
                     author: message.author.id,
                     message: message.content,
@@ -176,8 +208,6 @@ export default class TicketManager {
                 }
             });
         });
-
-        reaction.users.remove(user);
     }
 
     async closeTicket(ticket: Ticket, channel: TextChannel) {
